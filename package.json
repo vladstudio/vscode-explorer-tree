@@ -3,10 +3,25 @@
   "displayName": "Explorer Tree Generator",
   "description": "Generate markdown tree structure from Explorer folders",
   "version": "0.0.1",
+  "publisher": "vladstudio",
+  "author": {
+    "name": "vladstudio"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vladstudio/vscode-explorer-tree.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vladstudio/vscode-explorer-tree/issues"
+  },
+  "homepage": "https://github.com/vladstudio/vscode-explorer-tree#readme",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": ["Other"],
+  "keywords": ["tree", "explorer", "markdown", "directory", "structure"],
+  "icon": "tree.png",
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
