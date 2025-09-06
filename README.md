@@ -1,8 +1,8 @@
 # Explorer Tree Generator
 
-- Generate visual tree structure with ASCII art
+- Right-click a folder or an empty space in Explorer sidebar
 - Choose files + folders or folders only
+- A tree is generated in new markdown document
 - Respects VS Code exclude patterns
 - Sorted output (folders first, then alphabetical)
-- Opens result in new markdown document
 
