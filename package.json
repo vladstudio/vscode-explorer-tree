@@ -2,7 +2,7 @@
   "name": "vscode-explorer-tree",
   "displayName": "Explorer Tree Generator",
   "description": "Generate markdown tree structure from Explorer folders",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "vladstudio",
   "author": {
     "name": "vladstudio"
