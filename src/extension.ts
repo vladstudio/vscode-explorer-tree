@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as micromatch from 'micromatch';
 
 export function activate(context: vscode.ExtensionContext) {
     const disposable = vscode.commands.registerCommand('explorerTree.generateTree', async (resource: vscode.Uri) => {
@@ -43,19 +44,19 @@ async function generateTree(rootPath: string, includeFiles: boolean): Promise<st
     const excludePatterns = config.get<{[key: string]: boolean}>('exclude') || {};
     
     const rootName = path.basename(rootPath);
-    const result = await buildTree(rootPath, '', includeFiles, excludePatterns);
+    const result = await buildTree(rootPath, '', includeFiles, excludePatterns, rootPath);
     
     return rootName + '\n' + result;
 }
 
-async function getDirectoryEntries(dirPath: string, excludePatterns: {[key: string]: boolean}): Promise<{name: string, isDirectory: boolean}[]> {
+async function getDirectoryEntries(dirPath: string, excludePatterns: {[key: string]: boolean}, rootPath: string): Promise<{name: string, isDirectory: boolean}[]> {
     try {
         const entries = await fs.promises.readdir(dirPath);
         const filteredEntries = [];
         
         for (const entry of entries) {
             const fullPath = path.join(dirPath, entry);
-            const relativePath = path.relative(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', fullPath);
+            const relativePath = path.relative(rootPath, fullPath);
             
             let shouldExclude = false;
             for (const pattern of Object.keys(excludePatterns)) {
@@ -84,8 +85,8 @@ async function getDirectoryEntries(dirPath: string, excludePatterns: {[key: stri
     }
 }
 
-async function buildTree(dirPath: string, prefix: string, includeFiles: boolean, excludePatterns: {[key: string]: boolean}): Promise<string> {
-    const entries = await getDirectoryEntries(dirPath, excludePatterns);
+async function buildTree(dirPath: string, prefix: string, includeFiles: boolean, excludePatterns: {[key: string]: boolean}, rootPath: string): Promise<string> {
+    const entries = await getDirectoryEntries(dirPath, excludePatterns, rootPath);
     const filteredEntries = includeFiles ? entries : entries.filter(entry => entry.isDirectory);
     
     let result = '';
@@ -100,7 +101,7 @@ async function buildTree(dirPath: string, prefix: string, includeFiles: boolean,
         if (entry.isDirectory) {
             const entryPath = path.join(dirPath, entry.name);
             const newPrefix = prefix + (isLast ? '   ' : '│  ');
-            result += await buildTree(entryPath, newPrefix, includeFiles, excludePatterns);
+            result += await buildTree(entryPath, newPrefix, includeFiles, excludePatterns, rootPath);
         }
     }
     
@@ -108,13 +109,11 @@ async function buildTree(dirPath: string, prefix: string, includeFiles: boolean,
 }
 
 function matchesPattern(filePath: string, pattern: string): boolean {
-    const regexPattern = pattern
-        .replace(/\./g, '\\.')
-        .replace(/\*/g, '.*')
-        .replace(/\?/g, '.');
+    // Normalize path separators to forward slashes for consistent matching
+    const normalizedPath = filePath.replace(/\\/g, '/');
     
-    const regex = new RegExp(`^${regexPattern}$`);
-    return regex.test(filePath) || regex.test(path.basename(filePath));
+    // Use micromatch for proper glob pattern matching
+    return micromatch.isMatch(normalizedPath, pattern);
 }
 
 export function deactivate() {}
